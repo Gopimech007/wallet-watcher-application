@@ -1,4 +1,4 @@
-# Gopi Finance Tracker
+# Wallet Watcher
 
 A simple, beautiful personal finance web app for tracking your monthly budget, EMIs, savings, and loans across multiple months.
 
@@ -237,3 +237,4 @@ A: Yes, use month selector to switch to any past month.
 **Built with ❤️ for smart money management**
 
 Simple. Beautiful. Powerful. 💰
+
