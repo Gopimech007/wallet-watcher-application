@@ -816,4 +816,193 @@ input[type="checkbox"] {
     .stat-card[style*="grid-column"] {
         grid-column: span 1 !important;
     }
+}/* Distinction between Planned and Actual columns */
+.col-planned {
+    position: relative;
+}
+
+.col-planned input {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.col-actual input {
+    background-color: var(--bg-primary);
+    /* Slightly lighter/different than tertiary to stand out as "input field" */
+    border-color: var(--primary);
+    /* Highlight border to invite interaction */
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.col-actual input:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    /* Green glow for actual money spent */
+    border-color: var(--success);
+}
+
+/* Auto-fill button in section header */
+.section-actions {
+    float: right;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-icon-xs {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    transition: all var(--transition-base);
+}
+
+.btn-icon-xs:hover {
+    color: var(--primary);
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* Ensure table inputs are aligned */
+.budget-input {
+    width: 100%;
+    min-width: 100px;
+}
+/* Loan Table Responsive Fixes */
+.loans-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+}
+
+.loans-table {
+    min-width: 900px;
+    /* Force table to maintain width and scroll if needed */
+}
+
+/* Ensure inputs in the loan table have reasonable minimum widths */
+.loans-table input {
+    min-width: 100px;
+}
+
+/* Specific column adjustments */
+.loans-table input[data-field="name"] {
+    min-width: 150px;
+    /* Name needs more space */
+}
+
+.loans-table input[data-field="interest"] {
+    min-width: 60px;
+    /* Interest % can be small */
+}
+
+.loans-table input[data-field="targetYear"] {
+    min-width: 80px;
+}
+
+/* Make headers non-breaking where appropriate */
+.loans-table th {
+    white-space: nowrap;
+}
+/* Fix for truncated numbers in Loan table */
+.loans-table input[data-field="total"],
+.loans-table input[data-field="balance"] {
+    min-width: 140px;
+    /* Give more space for large loan amounts */
+}
+
+.loans-table input[data-field="emi"] {
+    min-width: 110px;
+}
+
+.loans-table input {
+    padding-left: 0.5rem;
+    /* Reduce padding to show more digits */
+    padding-right: 0.5rem;
+}
+/* Custom Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.25rem;
+}
+
+#modalBody {
+    margin-bottom: 1.5rem;
+}
+
+#modalMessage {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
 }
