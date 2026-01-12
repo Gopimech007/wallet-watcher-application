@@ -52,13 +52,19 @@ let currentMonthKey = '';
 let hasUnsavedChanges = false;
 
 // Initialize app
+// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    migrateOldData();
-    initializeCurrentMonth();
-    setupNavigation();
-    setupEventListeners();
-    renderMonthSelector();
-    loadCurrentMonth();
+    try {
+        migrateOldData();
+        initializeCurrentMonth();
+        setupNavigation();
+        setupEventListeners();
+        renderMonthSelector();
+        loadCurrentMonth();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('Error loading application data. Please refresh.', 'error');
+    }
 });
 
 // Month key format: "YYYY-MM"
@@ -251,8 +257,34 @@ function loadCurrentMonth() {
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
-    const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebarClose = document.getElementById('sidebarClose');
+
+    // Mobile menu toggle
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        });
+    }
+
+    // Close sidebar
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -265,20 +297,18 @@ function setupNavigation() {
             pages.forEach(page => page.classList.remove('active'));
             document.getElementById(`${targetPage}-page`).classList.add('active');
 
+            // Close mobile menu after navigation
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            }
+
             if (targetPage === 'compare') {
                 renderCompareMonths();
             } else if (targetPage === 'trends') {
                 renderTrends();
             }
-
-            if (window.innerWidth <= 1024) {
-                sidebar.classList.remove('active');
-            }
         });
-    });
-
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
     });
 }
 
