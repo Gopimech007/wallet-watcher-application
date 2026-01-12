@@ -1,32 +1,32 @@
 // Default budget data template
 const defaultBudgetTemplate = {
     income: [
-        { category: 'Salary', planned: 207000, actual: 207000, notes: '' }
+        { category: 'Salary', planned: 207000, actual: 0, notes: '' }
     ],
     emi: [
-        { category: 'Home Loan', planned: 29100, actual: 29100, notes: '' },
-        { category: 'Car Loan', planned: 20000, actual: 20000, notes: '' },
-        { category: 'LIC Consolidation Loan', planned: 58500, actual: 58500, notes: '' }
+        { category: 'Home Loan', planned: 29100, actual: 0, notes: '' },
+        { category: 'Car Loan', planned: 20000, actual: 0, notes: '' },
+        { category: 'LIC Consolidation Loan', planned: 58500, actual: 0, notes: '' }
     ],
     living: [
-        { category: 'Provisions & Vegetables', planned: 7500, actual: 7500, notes: '' },
-        { category: 'Daily Expenses', planned: 4000, actual: 4000, notes: '' },
-        { category: 'EB/Gas/Internet/Phone/DTH', planned: 7000, actual: 7000, notes: '' },
-        { category: 'Petrol/Travel', planned: 7500, actual: 7500, notes: '' },
-        { category: 'Weekend Expenses', planned: 7000, actual: 7000, notes: '' },
-        { category: 'Office Commute', planned: 5000, actual: 5000, notes: '' }
+        { category: 'Provisions & Vegetables', planned: 7500, actual: 0, notes: '' },
+        { category: 'Daily Expenses', planned: 4000, actual: 0, notes: '' },
+        { category: 'EB/Gas/Internet/Phone/DTH', planned: 7000, actual: 0, notes: '' },
+        { category: 'Petrol/Travel', planned: 7500, actual: 0, notes: '' },
+        { category: 'Weekend Expenses', planned: 7000, actual: 0, notes: '' },
+        { category: 'Office Commute', planned: 5000, actual: 0, notes: '' }
     ],
     family: [
-        { category: 'Grandpa + Agriculture', planned: 15000, actual: 15000, notes: '' },
-        { category: 'Wife Business', planned: 10000, actual: 10000, notes: '' },
-        { category: 'YouTube', planned: 5000, actual: 5000, notes: '' }
+        { category: 'Grandpa + Agriculture', planned: 15000, actual: 0, notes: '' },
+        { category: 'Wife Business', planned: 10000, actual: 0, notes: '' },
+        { category: 'YouTube', planned: 5000, actual: 0, notes: '' }
     ],
     savings: [
-        { category: 'PPF', planned: 5000, actual: 5000, notes: '' },
-        { category: 'SIP', planned: 3000, actual: 3000, notes: '' },
-        { category: 'Annual Expenses Fund', planned: 15000, actual: 15000, notes: '' },
-        { category: 'Emergency Fund', planned: 5000, actual: 5000, notes: '' },
-        { category: 'Fun / Travel Fund', planned: 5000, actual: 5000, notes: '' }
+        { category: 'PPF', planned: 5000, actual: 0, notes: '' },
+        { category: 'SIP', planned: 3000, actual: 0, notes: '' },
+        { category: 'Annual Expenses Fund', planned: 15000, actual: 0, notes: '' },
+        { category: 'Emergency Fund', planned: 5000, actual: 0, notes: '' },
+        { category: 'Fun / Travel Fund', planned: 5000, actual: 0, notes: '' }
     ]
 };
 
@@ -137,6 +137,157 @@ function saveMonthData(monthKey, data) {
 
 function getBudgetData() {
     return getMonthData(currentMonthKey).budget;
+}
+
+// Custom Modal Logic
+const modal = {
+    overlay: document.getElementById('customModal'),
+    title: document.getElementById('modalTitle'),
+    message: document.getElementById('modalMessage'),
+    input: document.getElementById('modalInput'),
+    cancelBtn: document.getElementById('modalCancelBtn'),
+    confirmBtn: document.getElementById('modalConfirmBtn'),
+
+    close() {
+        this.overlay.classList.remove('active');
+        // Clear listeners to avoid duplicates
+        const newCancel = this.cancelBtn.cloneNode(true);
+        const newConfirm = this.confirmBtn.cloneNode(true);
+        this.cancelBtn.parentNode.replaceChild(newCancel, this.cancelBtn);
+        this.confirmBtn.parentNode.replaceChild(newConfirm, this.confirmBtn);
+        // Refresh references
+        this.cancelBtn = newCancel;
+        this.confirmBtn = newConfirm;
+    },
+
+    confirm(title, message, onConfirm) {
+        this.title.textContent = title;
+        this.message.textContent = message;
+        this.input.style.display = 'none';
+        this.overlay.classList.add('active');
+
+        this.cancelBtn.addEventListener('click', () => this.close());
+        this.confirmBtn.addEventListener('click', () => {
+            this.close();
+            onConfirm();
+        });
+    },
+
+    prompt(title, message, onConfirm) {
+        this.title.textContent = title;
+        this.message.textContent = message;
+        this.input.style.display = 'block';
+        this.input.value = '';
+        this.overlay.classList.add('active');
+        this.input.focus();
+
+        this.cancelBtn.addEventListener('click', () => this.close());
+        this.confirmBtn.addEventListener('click', () => {
+            const val = this.input.value.trim();
+            if (val) {
+                this.close();
+                onConfirm(val);
+            }
+        });
+
+        // Allow Enter key to confirm
+        this.input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                const val = this.input.value.trim();
+                if (val) {
+                    this.close();
+                    onConfirm(val);
+                }
+            }
+        };
+    }
+};
+
+
+// Ensure section configuration exists (migration for existing data)
+// Helper to get defaults
+function getDefaultSections() {
+    return [
+        { title: 'INCOME', key: 'income' },
+        { title: 'EMI', key: 'emi' },
+        { title: 'LIVING EXPENSES', key: 'living' },
+        { title: 'FAMILY & PROJECTS', key: 'family' },
+        { title: 'SAVINGS / FUNDS', key: 'savings' }
+    ];
+}
+
+function getSectionConfig() {
+    // This function returns sections from current data
+    // It does NOT re-read or write on its own to avoid partial updates
+    const data = getBudgetData();
+    if (!data._sections) {
+        return getDefaultSections();
+    }
+    return data._sections;
+}
+
+function addBudgetRow(sectionKey) {
+    const data = getBudgetData();
+    if (!data[sectionKey]) data[sectionKey] = [];
+
+    // Create new blank item
+    data[sectionKey].push({ category: 'New Item', planned: 0, actual: 0, notes: '' });
+    saveBudgetData(data);
+    renderBudgetTable();
+}
+
+function deleteBudgetRow(sectionKey, index) {
+    modal.confirm('Delete Item', 'Are you sure you want to delete this row?', () => {
+        const data = getBudgetData();
+        if (data[sectionKey] && data[sectionKey].length > index) {
+            data[sectionKey].splice(index, 1);
+            saveBudgetData(data);
+            renderBudgetTable();
+        }
+    });
+}
+
+function addNewSection() {
+    modal.prompt('New Category', 'Enter new category name (e.g., Investment):', (title) => {
+        const key = title.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        const data = getBudgetData();
+
+        // Check if key already exists in data keys
+        if (data[key]) {
+            showNotification("Category already exists!", 'error');
+            return;
+        }
+
+        // Ensure _sections array exists on this instance of data
+        if (!data._sections) {
+            data._sections = getDefaultSections();
+        }
+
+        data[key] = []; // Initialize empty array
+        data._sections.push({ title: title.toUpperCase(), key: key });
+
+        saveBudgetData(data);
+        renderBudgetTable();
+    });
+}
+
+function deleteSection(sectionKey) {
+    modal.confirm('Delete Category', 'Are you sure you want to delete this entire category? All items in it will be lost.', () => {
+        const data = getBudgetData();
+
+        // Delete the data for the section
+        delete data[sectionKey];
+
+        // Update the section config
+        if (!data._sections) {
+            data._sections = getDefaultSections();
+        }
+
+        data._sections = data._sections.filter(s => s.key !== sectionKey);
+
+        saveBudgetData(data);
+        renderBudgetTable();
+    });
 }
 
 function saveBudgetData(data) {
@@ -326,47 +477,115 @@ function setupEventListeners() {
 }
 
 // Budget table
+// Helper to auto-fill actuals from planned
+function copySectionPlannedToActual(sectionKey) {
+    modal.confirm('Auto-fill', 'Auto-fill Actual values from Planned values for this section?', () => {
+        const data = getBudgetData();
+        data[sectionKey].forEach(item => {
+            item.actual = item.planned;
+        });
+        saveBudgetData(data);
+
+        // We need to trigger the UI update. updateBudgetData wraps render and dashboard, 
+        // but here we modified data directly.
+        renderBudgetTable();
+        updateDashboard();
+        showNotification('Auto-filled actual values for ' + sectionKey, 'success');
+    });
+}
+
+// Budget table
 function renderBudgetTable() {
     const data = getBudgetData();
+    const sections = getSectionConfig(); // Use dynamic sections
     const tbody = document.getElementById('budgetTableBody');
     tbody.innerHTML = '';
 
-    const sections = [
-        { title: 'INCOME', key: 'income', data: data.income },
-        { title: 'EMI', key: 'emi', data: data.emi },
-        { title: 'LIVING EXPENSES', key: 'living', data: data.living },
-        { title: 'FAMILY & PROJECTS', key: 'family', data: data.family },
-        { title: 'SAVINGS / FUNDS', key: 'savings', data: data.savings }
-    ];
-
     sections.forEach(section => {
+        // Ensure data array exists for this section key
+        if (!data[section.key]) data[section.key] = [];
+        const sectionData = data[section.key];
+
+        // Add Auto-fill button for expense sections
+        let actionHtml = '';
+
+        // Auto-fill button (not for income)
+        if (section.key !== 'income') {
+            actionHtml += `
+                <button class="btn-icon-xs" onclick="copySectionPlannedToActual('${section.key}')" title="Copy Planned to Actual">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Auto-fill
+                </button>
+            `;
+        }
+
+        // Add Item Button
+        actionHtml += `
+            <button class="btn-icon-xs" onclick="addBudgetRow('${section.key}')" title="Add Item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add
+            </button>
+        `;
+
+        // Delete Section Button (only for custom sections or if we want to allow deleting core ones too)
+        // Let's allow deleting everything except maybe Income? Or just everything.
+        // For safety, let's keep Income hard to delete, but user asked "delete the category".
+        if (section.key !== 'income') {
+            actionHtml += `
+                <button class="btn-icon-xs" onclick="deleteSection('${section.key}')" title="Delete Category" style="color: var(--danger);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            `;
+        }
+
         tbody.innerHTML += `
             <tr class="section-header">
-                <td colspan="5">${section.title}</td>
+                <td colspan="5">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${section.title}</span>
+                        <div class="section-actions" style="display:flex; gap: 10px;">${actionHtml}</div>
+                    </div>
+                </td>
             </tr>
         `;
 
-        section.data.forEach((item, index) => {
-            const diff = item.actual - item.planned;
+        sectionData.forEach((item, index) => {
+            const diff = section.key === 'income' ? item.actual - item.planned : item.planned - item.actual;
             const diffClass = diff >= 0 ? 'difference-positive' : 'difference-negative';
+
             tbody.innerHTML += `
                 <tr>
-                    <td>${item.category}</td>
-                    <td><input type="number" value="${item.planned}" data-section="${section.key}" data-index="${index}" data-field="planned" class="budget-input"></td>
-                    <td><input type="number" value="${item.actual}" data-section="${section.key}" data-index="${index}" data-field="actual" class="budget-input"></td>
+                    <td><input type="text" value="${item.category}" data-section="${section.key}" data-index="${index}" data-field="category" class="budget-input" style="font-weight:500;"></td>
+                    <td class="col-planned"><input type="number" value="${item.planned}" data-section="${section.key}" data-index="${index}" data-field="planned" class="budget-input"></td>
+                    <td class="col-actual"><input type="number" value="${item.actual}" data-section="${section.key}" data-index="${index}" data-field="actual" class="budget-input"></td>
                     <td class="${diffClass}">${formatCurrency(diff)}</td>
-                    <td><input type="text" value="${item.notes}" data-section="${section.key}" data-index="${index}" data-field="notes" class="budget-input"></td>
+                    <td style="display:flex; gap:0.5rem;">
+                        <input type="text" value="${item.notes}" data-section="${section.key}" data-index="${index}" data-field="notes" class="budget-input">
+                        <button class="btn-icon-xs" onclick="deleteBudgetRow('${section.key}', ${index})" title="Delete Row" style="color: var(--danger);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </td>
                 </tr>
             `;
         });
 
+        // Add ID to section total row for easier updates
         if (section.key !== 'income') {
-            const total = section.data.reduce((sum, item) => sum + item.actual, 0);
+            const total = sectionData.reduce((sum, item) => sum + item.actual, 0);
             tbody.innerHTML += `
-                <tr class="total-row">
+                <tr class="total-row" id="total-row-${section.key}">
                     <td>Total ${section.title}</td>
                     <td></td>
-                    <td>${formatCurrency(total)}</td>
+                    <td id="total-val-${section.key}">${formatCurrency(total)}</td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -374,48 +593,117 @@ function renderBudgetTable() {
         }
     });
 
+    // Add "Add New Category" Button at the bottom of the table
+    tbody.innerHTML += `
+        <tr>
+            <td colspan="5" style="text-align: center; padding: 1.5rem;">
+                <button class="btn btn-secondary btn-sm" onclick="addNewSection()">+ Add New Category</button>
+            </td>
+        </tr>
+    `;
+
+
     const salary = data.income[0].actual;
-    const totalEMI = data.emi.reduce((sum, item) => sum + item.actual, 0);
-    const totalLiving = data.living.reduce((sum, item) => sum + item.actual, 0);
-    const totalFamily = data.family.reduce((sum, item) => sum + item.actual, 0);
-    const totalSavings = data.savings.reduce((sum, item) => sum + item.actual, 0);
-    const totalExpense = totalEMI + totalLiving + totalFamily + totalSavings;
+
+    // Calculate total expenses dynamically
+    let totalExpense = 0;
+    sections.forEach(s => {
+        if (s.key !== 'income' && data[s.key]) {
+            totalExpense += data[s.key].reduce((sum, i) => sum + i.actual, 0);
+        }
+    });
+
     const balance = salary - totalExpense;
 
     tbody.innerHTML += `
-        <tr class="total-row">
+        <tr class="total-row" id="grand-total-row">
             <td>TOTAL EXPENSES</td>
             <td></td>
-            <td>${formatCurrency(totalExpense)}</td>
+            <td id="grand-total-val">${formatCurrency(totalExpense)}</td>
             <td></td>
             <td></td>
         </tr>
-        <tr class="total-row">
+        <tr class="total-row" id="balance-row">
             <td>BALANCE</td>
             <td></td>
-            <td class="${balance >= 0 ? 'difference-positive' : 'difference-negative'}">${formatCurrency(balance)}</td>
+            <td id="balance-val" class="${balance >= 0 ? 'difference-positive' : 'difference-negative'}">${formatCurrency(balance)}</td>
             <td></td>
             <td></td>
         </tr>
     `;
 
+    // Re-attach listeners only to new inputs (if any)
+    // But since we are replacing innerHTML, we must re-attach to all.
+    // NOTE: This function is only called on INIT or REFRESHe (not on input).
     document.querySelectorAll('.budget-input').forEach(input => {
+        // Use 'input' for real-time updates without re-render
         input.addEventListener('input', updateBudgetData);
     });
 }
 
 function updateBudgetData(e) {
-    const section = e.target.dataset.section;
+    const sectionKey = e.target.dataset.section;
     const index = parseInt(e.target.dataset.index);
     const field = e.target.dataset.field;
-    const value = field === 'notes' ? e.target.value : parseFloat(e.target.value) || 0;
+
+    // Allow empty string for better typing experience, default to 0 for calculations
+    const rawValue = e.target.value;
+
+    // If updating category name (text) vs amounts (number)
+    const val = field === 'category' || field === 'notes' ? rawValue : (parseFloat(rawValue) || 0);
 
     const data = getBudgetData();
-    data[section][index][field] = value;
+    if (!data[sectionKey]) data[sectionKey] = []; // safety
+
+    data[sectionKey][index][field] = val;
     saveBudgetData(data);
 
-    renderBudgetTable();
-    updateDashboard();
+    // DOM Updates instead of full re-render
+    const row = e.target.closest('tr');
+
+    if (field === 'planned' || field === 'actual') {
+        const item = data[sectionKey][index];
+        const diff = sectionKey === 'income' ? item.actual - item.planned : item.planned - item.actual;
+        const diffCell = row.cells[3]; // Difference is 4th column (index 3)
+
+        diffCell.textContent = formatCurrency(diff);
+
+        // Update class
+        diffCell.className = ''; // clear
+        diffCell.classList.add(diff >= 0 ? 'difference-positive' : 'difference-negative');
+
+        // Update Section Total
+        if (sectionKey !== 'income') {
+            const sectionTotal = data[sectionKey].reduce((sum, i) => sum + i.actual, 0);
+            const totalCell = document.getElementById(`total-val-${sectionKey}`);
+            if (totalCell) totalCell.textContent = formatCurrency(sectionTotal);
+        }
+
+        // Update Grand Total & Balance
+        const salary = data.income[0].actual;
+
+        let totalExpense = 0;
+        const sections = getSectionConfig();
+        sections.forEach(s => {
+            if (s.key !== 'income' && data[s.key]) {
+                totalExpense += data[s.key].reduce((sum, i) => sum + i.actual, 0);
+            }
+        });
+
+        const balance = salary - totalExpense;
+
+        const grandTotalCell = document.getElementById('grand-total-val');
+        if (grandTotalCell) grandTotalCell.textContent = formatCurrency(totalExpense);
+
+        const balanceCell = document.getElementById('balance-val');
+        if (balanceCell) {
+            balanceCell.textContent = formatCurrency(balance);
+            balanceCell.className = balance >= 0 ? 'difference-positive' : 'difference-negative';
+        }
+
+        // Update Dashboard cards (salary, emi, etc need live updates too)
+        updateDashboard();
+    }
 }
 
 function saveBudget() {
