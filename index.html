@@ -340,6 +340,22 @@
     <!-- Overlay for mobile menu -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Custom Modal for Dialogs -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <div id="modalBody">
+                <p id="modalMessage">Are you sure?</p>
+                <input type="text" id="modalInput" class="modal-input" style="display:none;"
+                    placeholder="Enter value...">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 
