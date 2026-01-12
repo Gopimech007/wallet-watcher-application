@@ -13,6 +13,16 @@
 </head>
 
 <body>
+    <!-- Mobile Header (visible only on mobile) -->
+    <header class="mobile-header">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1 class="mobile-title">Wallet Watcher</h1>
+    </header>
+
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" id="sidebar">
@@ -29,13 +39,9 @@
                             </linearGradient>
                         </defs>
                     </svg>
-                    <h1>Gopi Finance</h1>
+                    <h1>Wallet Watcher</h1>
                 </div>
-                <button class="menu-toggle" id="menuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+                <button class="sidebar-close" id="sidebarClose">×</button>
             </div>
             <nav class="nav-menu">
                 <a href="#" class="nav-item active" data-page="dashboard">
@@ -331,8 +337,10 @@
         </main>
     </div>
 
+    <!-- Overlay for mobile menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <script src="app.js"></script>
 </body>
-
 
 </html>
